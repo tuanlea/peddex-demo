@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Echo Client</title>
+    <title>Spaceship Shooter</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,7 +20,9 @@
 
 <div class="chat-container">
     <!-- This is our new game board! -->
-    <canvas id="gameCanvas" width="800" height="600" style="background-color: #0f172a; border-bottom: 2px solid #334155;"></canvas>
+    <div id="gameContainer" style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; background-color: #000; border-bottom: 2px solid #334155;">
+        <canvas id="gameCanvas" width="1280" height="800" style="background-color: #0f172a; max-width: 100%; max-height: 100%; aspect-ratio: 16/10;"></canvas>
+    </div>
 
     <div class="chat-messages" id="messages">
         <div class="message system">Connecting to server...</div>

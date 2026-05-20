@@ -10,10 +10,8 @@ body {
 }
 .chat-container {
     background-color: #1e293b;
-    border-radius: 12px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-    width: 800px;
-    max-width: 95%;
+    width: 100vw;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -25,15 +23,15 @@ body {
     font-weight: bold;
     font-size: 1.25rem;
 }
+
 .chat-messages {
-    flex: 1;
     padding: 16px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    min-height: 300px;
-    max-height: 400px;
+    height: 250px;
+    flex: 0 0 250px;
 }
 .message {
     padding: 10px 14px;
