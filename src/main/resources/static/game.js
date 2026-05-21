@@ -159,11 +159,12 @@ function drawFlame(ctx, radius) {
     ctx.fill();
 }
 
-let lastSentX = myPlayer.x;
-let lastSentY = myPlayer.y;
-let lastSentAngle = myPlayer.angle;
-let lastSentThrusting = myPlayer.thrusting;
-let lastSentHealth = myPlayer.health;
+let lastSentX = 0;
+let lastSentY = 0;
+let lastSentAngle = 0;
+let lastSentThrusting = false;
+let lastSentHealth = 3;
+let lastSendTime = 0;
 
 function updatePlayerPhysics() {
     const accel = 0.03;
@@ -204,13 +205,17 @@ function updatePlayerPhysics() {
     myPlayer.x = Math.max(visualRadius, Math.min(canvas.width - visualRadius, myPlayer.x));
     myPlayer.y = Math.max(visualRadius, Math.min(canvas.height - visualRadius, myPlayer.y));
 
-    if (myPlayer.thrusting !== lastSentThrusting || Math.abs(myPlayer.x - lastSentX) > 0.5 || Math.abs(myPlayer.y - lastSentY) > 0.5 || Math.abs(myPlayer.angle - lastSentAngle) > 0.1 || myPlayer.health !== lastSentHealth) {
-        sendMove(myPlayer.x, myPlayer.y, myPlayer.angle, myPlayer.thrusting, myPlayer.health);
-        lastSentX = myPlayer.x;
-        lastSentY = myPlayer.y;
-        lastSentAngle = myPlayer.angle;
-        lastSentThrusting = myPlayer.thrusting;
-        lastSentHealth = myPlayer.health;
+    const now = Date.now();
+    if (now - lastSendTime > 50) {
+        if (myPlayer.thrusting !== lastSentThrusting || Math.abs(myPlayer.x - lastSentX) > 0.5 || Math.abs(myPlayer.y - lastSentY) > 0.5 || Math.abs(myPlayer.angle - lastSentAngle) > 0.1 || myPlayer.health !== lastSentHealth) {
+            sendMove(myPlayer.x, myPlayer.y, myPlayer.angle, myPlayer.thrusting, myPlayer.health, myPlayer.vx, myPlayer.vy);
+            lastSentX = myPlayer.x;
+            lastSentY = myPlayer.y;
+            lastSentAngle = myPlayer.angle;
+            lastSentThrusting = myPlayer.thrusting;
+            lastSentHealth = myPlayer.health;
+            lastSendTime = now;
+        }
     }
 }
 
@@ -392,7 +397,7 @@ function updateAsteroids() {
                 myPlayer.vx = 0;
                 myPlayer.vy = 0;
             }
-            sendMove(myPlayer.x, myPlayer.y, myPlayer.angle, myPlayer.thrusting, myPlayer.health);
+            sendMove(myPlayer.x, myPlayer.y, myPlayer.angle, myPlayer.thrusting, myPlayer.health, myPlayer.vx, myPlayer.vy);
             continue;
         }
         
@@ -459,6 +464,24 @@ export function startGameLoop() {
         updatePlayerPhysics();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawParallaxBackground();
+        
+        // Predict other players movement locally
+        for (const username in otherPlayers) {
+            const p = otherPlayers[username];
+            if (p.thrusting) {
+                const accel = 0.03;
+                p.vx += Math.cos(p.angle) * accel;
+                p.vy += Math.sin(p.angle) * accel;
+            }
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= 0.98;
+            p.vy *= 0.98;
+            const visualRadius = myPlayer.radius * 2.5;
+            p.x = Math.max(visualRadius, Math.min(canvas.width - visualRadius, p.x));
+            p.y = Math.max(visualRadius, Math.min(canvas.height - visualRadius, p.y));
+        }
+
         drawOtherPlayers();
         drawLocalPlayer();
         updateMissiles();

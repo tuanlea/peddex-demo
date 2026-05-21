@@ -39,7 +39,16 @@ export function connectToServer() {
         }
         else if (data.type === 'move') {
             if (data.username !== myUsername) {
-                otherPlayers[data.username] = { x: data.x, y: data.y, angle: data.angle, shipType: data.shipType, thrusting: data.thrusting, health: data.health };
+                otherPlayers[data.username] = { 
+                    x: data.x, 
+                    y: data.y, 
+                    angle: data.angle, 
+                    shipType: data.shipType, 
+                    thrusting: data.thrusting, 
+                    health: data.health,
+                    vx: data.vx || 0,
+                    vy: data.vy || 0
+                };
             }
         }
         else if (data.type === 'shoot') {
@@ -66,7 +75,7 @@ export function connectToServer() {
                     myPlayer.vx = 0;
                     myPlayer.vy = 0;
                 }
-                sendMove(myPlayer.x, myPlayer.y, myPlayer.angle, myPlayer.thrusting, myPlayer.health);
+                sendMove(myPlayer.x, myPlayer.y, myPlayer.angle, myPlayer.thrusting, myPlayer.health, myPlayer.vx, myPlayer.vy);
             }
         }
         else if (data.type === 'kill') {
@@ -85,9 +94,9 @@ export function connectToServer() {
     });
 }
 
-export function sendMove(x, y, angle, thrusting, health) {
+export function sendMove(x, y, angle, thrusting, health, vx, vy) {
     if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: 'move', x: x, y: y, angle: angle, thrusting: thrusting, health: health }));
+        socket.send(JSON.stringify({ type: 'move', x: x, y: y, angle: angle, thrusting: thrusting, health: health, vx: vx, vy: vy }));
     }
 }
 

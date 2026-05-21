@@ -9,10 +9,12 @@ public class MoveMessage {
     public String shipType;
     public boolean thrusting;
     public int health;
+    public double vx;
+    public double vy;
 
     public MoveMessage() {}
 
-    public MoveMessage(String type, String username, int x, int y, double angle, String shipType, boolean thrusting, int health) {
+    public MoveMessage(String type, String username, int x, int y, double angle, String shipType, boolean thrusting, int health, double vx, double vy) {
         this.type = type;
         this.username = username;
         this.x = x;
@@ -21,5 +23,7 @@ public class MoveMessage {
         this.shipType = shipType;
         this.thrusting = thrusting;
         this.health = health;
+        this.vx = vx;
+        this.vy = vy;
     }
 }

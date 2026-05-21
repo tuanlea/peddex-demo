@@ -111,7 +111,7 @@ public class EchoWebSocketHandler extends TextWebSocketHandler {
         
         String shipType = (String) session.getAttributes().get("shipType");
         session.getAttributes().put("health", 3);
-        String initMessage = objectMapper.writeValueAsString(new MoveMessage("init", username, 0, 0, 0, shipType, false, 3));
+        String initMessage = objectMapper.writeValueAsString(new MoveMessage("init", username, 0, 0, 0, shipType, false, 3, 0.0, 0.0));
         session.sendMessage(new TextMessage(initMessage));
         
         for (WebSocketSession s : sessions) {
@@ -123,10 +123,12 @@ public class EchoWebSocketHandler extends TextWebSocketHandler {
                 String exShipType = (String) s.getAttributes().get("shipType");
                 Boolean exThrusting = (Boolean) s.getAttributes().get("thrusting");
                 Integer exHealth = (Integer) s.getAttributes().get("health");
+                Double exVx = (Double) s.getAttributes().get("vx");
+                Double exVy = (Double) s.getAttributes().get("vy");
                 
                 if (existingUser != null && exX != null && exY != null && exAngle != null && exShipType != null) {
                     String stateMessage = objectMapper.writeValueAsString(
-                            new MoveMessage("move", existingUser, exX, exY, exAngle, exShipType, exThrusting != null ? exThrusting : false, exHealth != null ? exHealth : 3)
+                            new MoveMessage("move", existingUser, exX, exY, exAngle, exShipType, exThrusting != null ? exThrusting : false, exHealth != null ? exHealth : 3, exVx != null ? exVx : 0.0, exVy != null ? exVy : 0.0)
                     );
                     session.sendMessage(new TextMessage(stateMessage));
                 }
@@ -149,14 +151,18 @@ public class EchoWebSocketHandler extends TextWebSocketHandler {
         double angle = jsonNode.has("angle") ? jsonNode.get("angle").asDouble() : -Math.PI / 2;
         boolean thrusting = jsonNode.has("thrusting") && jsonNode.get("thrusting").asBoolean();
         int health = jsonNode.has("health") ? jsonNode.get("health").asInt() : 3;
+        double vx = jsonNode.has("vx") ? jsonNode.get("vx").asDouble() : 0.0;
+        double vy = jsonNode.has("vy") ? jsonNode.get("vy").asDouble() : 0.0;
         
         session.getAttributes().put("x", x);
         session.getAttributes().put("y", y);
         session.getAttributes().put("angle", angle);
         session.getAttributes().put("thrusting", thrusting);
         session.getAttributes().put("health", health);
+        session.getAttributes().put("vx", vx);
+        session.getAttributes().put("vy", vy);
         
-        String moveMessage = objectMapper.writeValueAsString(new MoveMessage("move", username, x, y, angle, shipType, thrusting, health));
+        String moveMessage = objectMapper.writeValueAsString(new MoveMessage("move", username, x, y, angle, shipType, thrusting, health, vx, vy));
         broadcast(moveMessage);
     }
 
