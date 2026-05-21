@@ -32,7 +32,7 @@ for (let i = 0; i < 200; i++) {
 }
 
 export function spawnMissile(username, x, y, angle) {
-    missiles.push({ username, x, y, angle, speed: 7.0, active: true });
+    missiles.push({ username, x, y, angle, speed: 10.5, active: true });
 }
 
 const keys = {};
@@ -178,7 +178,7 @@ function updatePlayerPhysics() {
     // True frictionless space physics
     const accel = 0.2;     // Adjusted acceleration for frictionless space
     const friction = 1.0;  // 1.0 = No friction, drift forever
-    const maxSpeed = 12.0; // Hard cap on velocity so you don't fly out of control
+    const maxSpeed = 7.0;  // Hard cap on velocity so you don't fly out of control
 
     // Classic Asteroids tank-controls
     let inputRotation = 0;
@@ -518,9 +518,9 @@ export function startGameLoop() {
                 p.vx *= 1.0;
                 p.vy *= 1.0;
                 const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-                if (speed > 12.0) {
-                    p.vx = (p.vx / speed) * 12.0;
-                    p.vy = (p.vy / speed) * 12.0;
+                if (speed > 7.0) {
+                    p.vx = (p.vx / speed) * 7.0;
+                    p.vy = (p.vy / speed) * 7.0;
                 }
                 const visualRadius = myPlayer.radius * 2.5;
                 p.x = Math.max(visualRadius, Math.min(canvas.width - visualRadius, p.x));
