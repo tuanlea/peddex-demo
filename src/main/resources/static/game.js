@@ -207,7 +207,7 @@ function updatePlayerPhysics() {
         myPlayer.angle += diff * 0.1;
     }
 
-    const visualRadius = myPlayer.radius * 2.5;
+    const visualRadius = myPlayer.radius;
     myPlayer.x = Math.max(visualRadius, Math.min(canvas.width - visualRadius, myPlayer.x));
     myPlayer.y = Math.max(visualRadius, Math.min(canvas.height - visualRadius, myPlayer.y));
 
