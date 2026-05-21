@@ -37,9 +37,15 @@ export function spawnMissile(username, x, y, angle) {
 
 const keys = {};
 window.addEventListener('keydown', (e) => {
-    if (document.activeElement !== elements.messageInput && document.activeElement !== elements.usernameInput) keys[e.key] = true;
+    if (document.activeElement !== elements.messageInput && document.activeElement !== elements.usernameInput) {
+        keys[e.key] = true;
+        if (e.code) keys[e.code] = true;
+    }
 });
-window.addEventListener('keyup', (e) => keys[e.key] = false);
+window.addEventListener('keyup', (e) => {
+    keys[e.key] = false;
+    if (e.code) keys[e.code] = false;
+});
 
 let lastShootTime = 0;
 window.addEventListener('keydown', (e) => {
@@ -173,10 +179,10 @@ function updatePlayerPhysics() {
     let inputX = 0;
     let inputY = 0;
 
-    if (keys['ArrowUp'] || keys['w'] || keys['W']) inputY -= 1;
-    if (keys['ArrowDown'] || keys['s'] || keys['S']) inputY += 1;
-    if (keys['ArrowLeft'] || keys['a'] || keys['A']) inputX -= 1;
-    if (keys['ArrowRight'] || keys['d'] || keys['D']) inputX += 1;
+    if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['KeyW']) inputY -= 1;
+    if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['KeyS']) inputY += 1;
+    if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['KeyA']) inputX -= 1;
+    if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['KeyD']) inputX += 1;
 
     if (inputX !== 0 || inputY !== 0) {
         const length = Math.sqrt(inputX * inputX + inputY * inputY);
@@ -459,47 +465,63 @@ function drawScoreboard() {
 }
 
 export function startGameLoop() {
-    function drawGame() {
-        updatePlayerPhysics();
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawParallaxBackground();
-        
-        // Predict other players movement locally
-        for (const username in otherPlayers) {
-            const p = otherPlayers[username];
-            
-            // Lerp towards target position to fix rubber banding
-            if (p.targetX !== undefined && p.targetY !== undefined) {
-                const distSq = (p.targetX - p.x)**2 + (p.targetY - p.y)**2;
-                if (distSq > 10000) { 
-                    p.x = p.targetX;
-                    p.y = p.targetY;
-                } else {
-                    p.x += (p.targetX - p.x) * 0.2;
-                    p.y += (p.targetY - p.y) * 0.2;
-                }
-            }
+    const TICK_RATE = 1000 / 60;
+    let lastTime = performance.now();
+    let accumulator = 0;
 
-            if (p.thrusting) {
-                const accel = 0.03;
-                p.vx += Math.cos(p.angle) * accel;
-                p.vy += Math.sin(p.angle) * accel;
+    function drawGame(time) {
+        if (!time) time = performance.now();
+        let dt = time - lastTime;
+        if (dt > 100) dt = 100; // Prevent spiral of death on tab switch
+        lastTime = time;
+        accumulator += dt;
+
+        while (accumulator >= TICK_RATE) {
+            updatePlayerPhysics();
+            
+            // Predict other players movement locally
+            for (const username in otherPlayers) {
+                const p = otherPlayers[username];
+                
+                // Lerp towards target position
+                if (p.targetX !== undefined && p.targetY !== undefined) {
+                    const distSq = (p.targetX - p.x)**2 + (p.targetY - p.y)**2;
+                    if (distSq > 10000) { 
+                        p.x = p.targetX;
+                        p.y = p.targetY;
+                    } else {
+                        p.x += (p.targetX - p.x) * 0.2;
+                        p.y += (p.targetY - p.y) * 0.2;
+                    }
+                }
+
+                if (p.thrusting) {
+                    const accel = 0.03;
+                    p.vx += Math.cos(p.angle) * accel;
+                    p.vy += Math.sin(p.angle) * accel;
+                }
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vx *= 0.98;
+                p.vy *= 0.98;
+                const visualRadius = myPlayer.radius * 2.5;
+                p.x = Math.max(visualRadius, Math.min(canvas.width - visualRadius, p.x));
+                p.y = Math.max(visualRadius, Math.min(canvas.height - visualRadius, p.y));
             }
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vx *= 0.98;
-            p.vy *= 0.98;
-            const visualRadius = myPlayer.radius * 2.5;
-            p.x = Math.max(visualRadius, Math.min(canvas.width - visualRadius, p.x));
-            p.y = Math.max(visualRadius, Math.min(canvas.height - visualRadius, p.y));
+            
+            updateMissiles();
+            updateAsteroids();
+            
+            accumulator -= TICK_RATE;
         }
 
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawParallaxBackground();
         drawOtherPlayers();
         drawLocalPlayer();
-        updateMissiles();
-        updateAsteroids();
         drawScoreboard();
+        
         requestAnimationFrame(drawGame);
     }
-    drawGame();
+    requestAnimationFrame(drawGame);
 }
