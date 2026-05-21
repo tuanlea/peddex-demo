@@ -1,5 +1,6 @@
 import { appendMessage, elements } from './ui.js';
 import { myUsername, myPlayer, otherPlayers, spawnMissile, asteroids, scores } from './game.js';
+import { playHitSound } from './audio.js';
 
 let socket = null;
 
@@ -55,6 +56,7 @@ export function connectToServer() {
         }
         else if (data.type === 'hit') {
             if (data.victim === myUsername) {
+                playHitSound();
                 myPlayer.health--;
                 if (myPlayer.health <= 0) {
                     sendKill(data.shooter, myUsername);

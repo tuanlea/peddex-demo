@@ -1,6 +1,7 @@
 import { elements } from './ui.js';
 import { startGameLoop, setUsername } from './game.js';
 import { connectToServer, sendChat } from './network.js';
+import { startMusic } from './audio.js';
 
 // --- INITIALIZE GAME ---
 startGameLoop();
@@ -11,6 +12,7 @@ elements.joinGameBtn.addEventListener('click', () => {
     if (enteredName) {
         setUsername(enteredName);
         elements.lobbyOverlay.style.display = 'none';
+        startMusic();
         connectToServer();
     }
 });

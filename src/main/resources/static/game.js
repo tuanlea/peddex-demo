@@ -1,5 +1,6 @@
 import { elements } from './ui.js';
 import { sendMove, sendShoot, sendDestroyAsteroid, sendKill, sendHit } from './network.js';
+import { playHitSound } from './audio.js';
 
 export const canvas = document.getElementById('gameCanvas');
 export const ctx = canvas.getContext('2d');
@@ -317,6 +318,7 @@ function updateMissiles() {
                 hitAsteroid = true;
                 asteroids.splice(j, 1);
                 sendDestroyAsteroid(ast.id);
+                playHitSound();
                 break;
             }
         }
@@ -341,6 +343,7 @@ function updateMissiles() {
                 m.active = false;
                 missiles.splice(i, 1);
                 sendHit(hitVictim, m.username);
+                playHitSound();
                 continue;
             }
         }
@@ -379,6 +382,7 @@ function updateAsteroids() {
         if ((dx * dx + dy * dy) < (myPlayer.radius + 20) * (myPlayer.radius + 20)) {
             asteroids.splice(i, 1);
             sendDestroyAsteroid(ast.id);
+            playHitSound();
             
             myPlayer.health--;
             if (myPlayer.health <= 0) {
