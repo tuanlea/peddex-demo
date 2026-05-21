@@ -301,8 +301,8 @@ function drawLocalPlayer() {
 
     const now = Date.now();
     const elapsed = now - lastShootTime;
-    if (elapsed < 2000) {
-        const progress = elapsed / 2000;
+    if (elapsed < 1000) {
+        const progress = elapsed / 1000;
         ctx.fillStyle = '#1e293b';
         ctx.fillRect(myPlayer.x - 15, myPlayer.y + 40, 30, 4);
         ctx.fillStyle = '#3b82f6';
