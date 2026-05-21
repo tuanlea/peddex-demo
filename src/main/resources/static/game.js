@@ -175,8 +175,9 @@ let lastSentHealth = 3;
 let lastSendTime = 0;
 
 function updatePlayerPhysics() {
-    const accel = 0.15;
-    const friction = 0.98;
+    // Tighter "UniBall" style physics
+    const accel = 0.35;    // Faster acceleration for snappy movement
+    const friction = 0.94; // More drag so you stop sliding a bit faster (tighter control)
 
     // Classic Asteroids tank-controls
     let inputRotation = 0;
@@ -188,7 +189,7 @@ function updatePlayerPhysics() {
     if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['KeyD']) inputRotation += 1;
 
     // Apply rotation
-    myPlayer.angle += inputRotation * 0.1;
+    myPlayer.angle += inputRotation * 0.15;
 
     // Apply thrust in the direction the ship is facing
     myPlayer.thrusting = (inputThrust > 0); // Only show flame when going forward
