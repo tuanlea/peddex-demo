@@ -396,6 +396,22 @@ function updateAsteroids() {
             continue;
         }
         
+        let hitOther = false;
+        for (const username in otherPlayers) {
+            const p = otherPlayers[username];
+            const pdx = p.x - ast.x;
+            const pdy = p.y - ast.y;
+            if ((pdx * pdx + pdy * pdy) < (35 + 20) * (35 + 20)) {
+                hitOther = true;
+                break;
+            }
+        }
+        if (hitOther) {
+            asteroids.splice(i, 1);
+            continue;
+        }
+
+        
         ctx.save();
         ctx.translate(ast.x, ast.y);
         ctx.rotate(ast.x * 0.02 + ast.y * 0.02);
