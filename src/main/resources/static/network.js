@@ -1,6 +1,6 @@
 import { appendMessage, elements } from './ui.js';
 import { myUsername, myPlayer, otherPlayers, spawnMissile, asteroids, scores } from './game.js';
-import { playHitSound } from './audio.js';
+import { playHitSound, playShootSound } from './audio.js';
 
 let socket = null;
 
@@ -66,6 +66,7 @@ export function connectToServer() {
         else if (data.type === 'shoot') {
             if (data.username !== myUsername) {
                 spawnMissile(data.username, data.x, data.y, data.angle);
+                playShootSound();
             }
         }
         else if (data.type === 'asteroid') {

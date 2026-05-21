@@ -1,6 +1,6 @@
 import { elements } from './ui.js';
 import { sendMove, sendShoot, sendDestroyAsteroid, sendKill, sendHit } from './network.js';
-import { playHitSound } from './audio.js';
+import { playHitSound, playShootSound } from './audio.js';
 
 export const canvas = document.getElementById('gameCanvas');
 export const ctx = canvas.getContext('2d');
@@ -52,8 +52,9 @@ window.addEventListener('keydown', (e) => {
     if (document.activeElement !== elements.messageInput && document.activeElement !== elements.usernameInput) {
         if (e.key === ' ' || e.key === 'Spacebar') {
             const now = Date.now();
-            if (now - lastShootTime > 2000) {
+            if (now - lastShootTime > 1000) {
                 lastShootTime = now;
+                playShootSound();
                 spawnMissile(myUsername, myPlayer.x, myPlayer.y, myPlayer.angle);
                 sendShoot(myPlayer.x, myPlayer.y, myPlayer.angle);
             }
@@ -64,8 +65,9 @@ window.addEventListener('keydown', (e) => {
 canvas.addEventListener('mousedown', (e) => {
     if (elements.lobbyOverlay.style.display !== 'none') return;
     const now = Date.now();
-    if (now - lastShootTime >= 2000) {
+    if (now - lastShootTime >= 1000) {
         lastShootTime = now;
+        playShootSound();
         spawnMissile(myUsername, myPlayer.x, myPlayer.y, myPlayer.angle);
         sendShoot(myPlayer.x, myPlayer.y, myPlayer.angle);
     }

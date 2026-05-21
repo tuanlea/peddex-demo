@@ -61,6 +61,30 @@ export function playHitSound() {
     noiseSource.stop(t + 0.4);
 }
 
+export function playShootSound() {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    // Laser "pew" effect: high pitch dropping rapidly
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(880, t); // Start at A5
+    osc.frequency.exponentialRampToValueAtTime(110, t + 0.15); // Drop to A2 quickly
+
+    // Volume envelope: sharp attack, quick decay
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.3, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+
+    osc.start(t);
+    osc.stop(t + 0.15);
+}
+
 export function startMusic() {
     if (!audioCtx) initAudio();
     if (isMusicPlaying) return;
