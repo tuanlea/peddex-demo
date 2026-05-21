@@ -32,7 +32,7 @@ for (let i = 0; i < 200; i++) {
 }
 
 export function spawnMissile(username, x, y, angle) {
-    missiles.push({ username, x, y, angle, speed: 2.25, active: true });
+    missiles.push({ username, x, y, angle, speed: 7.0, active: true });
 }
 
 const keys = {};
@@ -173,7 +173,7 @@ let lastSentHealth = 3;
 let lastSendTime = 0;
 
 function updatePlayerPhysics() {
-    const accel = 0.03;
+    const accel = 0.1;
     const friction = 0.98;
 
     let inputX = 0;
@@ -362,7 +362,11 @@ function updateMissiles() {
             missiles.splice(i, 1);
             continue;
         }
-        
+    }
+}
+
+function drawMissiles() {
+    for (const m of missiles) {
         ctx.save();
         ctx.translate(m.x, m.y);
         ctx.rotate(m.angle + Math.PI);
@@ -420,8 +424,11 @@ function updateAsteroids() {
             asteroids.splice(i, 1);
             continue;
         }
+    }
+}
 
-        
+function drawAsteroids() {
+    for (const ast of asteroids) {
         ctx.save();
         ctx.translate(ast.x, ast.y);
         ctx.rotate(ast.x * 0.02 + ast.y * 0.02);
@@ -469,11 +476,11 @@ export function startGameLoop() {
     let lastTime = performance.now();
     let accumulator = 0;
 
-    function drawGame(time) {
-        if (!time) time = performance.now();
-        let dt = time - lastTime;
+    function drawGame() {
+        const now = performance.now();
+        let dt = now - lastTime;
         if (dt > 100) dt = 100; // Prevent spiral of death on tab switch
-        lastTime = time;
+        lastTime = now;
         accumulator += dt;
 
         while (accumulator >= TICK_RATE) {
@@ -496,7 +503,7 @@ export function startGameLoop() {
                 }
 
                 if (p.thrusting) {
-                    const accel = 0.03;
+                    const accel = 0.2;
                     p.vx += Math.cos(p.angle) * accel;
                     p.vy += Math.sin(p.angle) * accel;
                 }
@@ -517,6 +524,8 @@ export function startGameLoop() {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawParallaxBackground();
+        drawMissiles();
+        drawAsteroids();
         drawOtherPlayers();
         drawLocalPlayer();
         drawScoreboard();
