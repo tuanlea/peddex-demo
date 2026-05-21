@@ -175,9 +175,10 @@ let lastSentHealth = 3;
 let lastSendTime = 0;
 
 function updatePlayerPhysics() {
-    // Tighter "UniBall" style physics
-    const accel = 0.35;    // Faster acceleration for snappy movement
-    const friction = 0.94; // More drag so you stop sliding a bit faster (tighter control)
+    // True frictionless space physics
+    const accel = 0.2;     // Adjusted acceleration for frictionless space
+    const friction = 1.0;  // 1.0 = No friction, drift forever
+    const maxSpeed = 12.0; // Hard cap on velocity so you don't fly out of control
 
     // Classic Asteroids tank-controls
     let inputRotation = 0;
@@ -202,6 +203,13 @@ function updatePlayerPhysics() {
     myPlayer.vx *= friction;
     myPlayer.vy *= friction;
     
+    // Cap maximum speed
+    const speed = Math.sqrt(myPlayer.vx * myPlayer.vx + myPlayer.vy * myPlayer.vy);
+    if (speed > maxSpeed) {
+        myPlayer.vx = (myPlayer.vx / speed) * maxSpeed;
+        myPlayer.vy = (myPlayer.vy / speed) * maxSpeed;
+    }
+
     myPlayer.x += myPlayer.vx;
     myPlayer.y += myPlayer.vy;
 
@@ -507,8 +515,13 @@ export function startGameLoop() {
                 }
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vx *= 0.98;
-                p.vy *= 0.98;
+                p.vx *= 1.0;
+                p.vy *= 1.0;
+                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                if (speed > 12.0) {
+                    p.vx = (p.vx / speed) * 12.0;
+                    p.vy = (p.vy / speed) * 12.0;
+                }
                 const visualRadius = myPlayer.radius * 2.5;
                 p.x = Math.max(visualRadius, Math.min(canvas.width - visualRadius, p.x));
                 p.y = Math.max(visualRadius, Math.min(canvas.height - visualRadius, p.y));
