@@ -1,5 +1,5 @@
 import { elements } from './ui.js';
-import { sendMove, sendShoot, sendDestroyAsteroid, sendKill } from './network.js';
+import { sendMove, sendShoot, sendDestroyAsteroid, sendKill, sendHit } from './network.js';
 
 export const canvas = document.getElementById('gameCanvas');
 export const ctx = canvas.getContext('2d');
@@ -11,8 +11,8 @@ export let myPlayer = {
     x: Math.floor(Math.random() * (1280 - 60)) + 30,
     y: Math.floor(Math.random() * (800 - 60)) + 30,
     color: '#3b82f6',
-    radius: 15,
-    angle: -Math.PI / 2,
+    radius: 35,
+    angle: 0,
     vx: 0,
     vy: 0,
     shipType: 'blue',
@@ -51,6 +51,16 @@ window.addEventListener('keydown', (e) => {
                 sendShoot(myPlayer.x, myPlayer.y, myPlayer.angle);
             }
         }
+    }
+});
+
+canvas.addEventListener('mousedown', (e) => {
+    if (elements.lobbyOverlay.style.display !== 'none') return;
+    const now = Date.now();
+    if (now - lastShootTime >= 2000) {
+        lastShootTime = now;
+        spawnMissile(myUsername, myPlayer.x, myPlayer.y, myPlayer.angle);
+        sendShoot(myPlayer.x, myPlayer.y, myPlayer.angle);
     }
 });
 
@@ -226,12 +236,12 @@ function drawOtherPlayers() {
             ctx.save();
             ctx.translate(p.x, p.y);
             ctx.rotate((p.angle !== undefined ? p.angle : -Math.PI / 2) + Math.PI / 2);
-            if (p.thrusting) drawFlame(ctx, myPlayer.radius);
-            ctx.drawImage(shipCanvas, -myPlayer.radius * 2.5, -myPlayer.radius * 2.5, myPlayer.radius * 5, myPlayer.radius * 5);
+            if (p.thrusting) drawFlame(ctx, myPlayer.radius * 0.5);
+            ctx.drawImage(shipCanvas, -myPlayer.radius, -myPlayer.radius, myPlayer.radius * 2, myPlayer.radius * 2);
             ctx.restore();
         } else {
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 15, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, 35, 0, Math.PI * 2);
             ctx.fillStyle = p.shipType === 'red' ? '#ef4444' : '#3b82f6';
             ctx.fill();
             ctx.closePath();
@@ -241,14 +251,14 @@ function drawOtherPlayers() {
         for (let i = 0; i < hp; i++) {
             ctx.fillStyle = '#22c55e';
             ctx.beginPath();
-            ctx.arc(p.x - 10 + i * 10, p.y - 30, 3, 0, Math.PI * 2);
+            ctx.arc(p.x - 10 + i * 10, p.y - 45, 3, 0, Math.PI * 2);
             ctx.fill();
         }
 
         ctx.fillStyle = '#f8fafc';
         ctx.font = '10px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(username, p.x, p.y - 40);
+        ctx.fillText(username, p.x, p.y - 55);
     }
 }
 
@@ -258,8 +268,8 @@ function drawLocalPlayer() {
         ctx.save();
         ctx.translate(myPlayer.x, myPlayer.y);
         ctx.rotate(myPlayer.angle + Math.PI / 2);
-        if (myPlayer.thrusting) drawFlame(ctx, myPlayer.radius);
-        ctx.drawImage(myShipCanvasToDraw, -myPlayer.radius * 2.5, -myPlayer.radius * 2.5, myPlayer.radius * 5, myPlayer.radius * 5);
+        if (myPlayer.thrusting) drawFlame(ctx, myPlayer.radius * 0.5);
+        ctx.drawImage(myShipCanvasToDraw, -myPlayer.radius, -myPlayer.radius, myPlayer.radius * 2, myPlayer.radius * 2);
         ctx.restore();
     } else {
         ctx.beginPath();
@@ -272,7 +282,7 @@ function drawLocalPlayer() {
     for (let i = 0; i < myPlayer.health; i++) {
         ctx.fillStyle = '#22c55e';
         ctx.beginPath();
-        ctx.arc(myPlayer.x - 10 + i * 10, myPlayer.y - 30, 3, 0, Math.PI * 2);
+        ctx.arc(myPlayer.x - 10 + i * 10, myPlayer.y - 45, 3, 0, Math.PI * 2);
         ctx.fill();
     }
 
@@ -281,15 +291,15 @@ function drawLocalPlayer() {
     if (elapsed < 2000) {
         const progress = elapsed / 2000;
         ctx.fillStyle = '#1e293b';
-        ctx.fillRect(myPlayer.x - 15, myPlayer.y + 25, 30, 4);
+        ctx.fillRect(myPlayer.x - 15, myPlayer.y + 40, 30, 4);
         ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(myPlayer.x - 15, myPlayer.y + 25, 30 * progress, 4);
+        ctx.fillRect(myPlayer.x - 15, myPlayer.y + 40, 30 * progress, 4);
     }
 
     ctx.fillStyle = '#f8fafc';
     ctx.font = '10px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(myUsername, myPlayer.x, myPlayer.y - 40);
+    ctx.fillText(myUsername, myPlayer.x, myPlayer.y - 55);
 }
 
 function updateMissiles() {
@@ -316,43 +326,21 @@ function updateMissiles() {
             continue;
         }
 
-        if (m.username !== myUsername && m.active) {
-            const dx = myPlayer.x - m.x;
-            const dy = myPlayer.y - m.y;
-            const distSq = dx * dx + dy * dy;
-            if (distSq < (myPlayer.radius + 10) * (myPlayer.radius + 10)) {
-                m.active = false;
-                missiles.splice(i, 1);
-                
-                myPlayer.health--;
-                if (myPlayer.health <= 0) {
-                    sendKill(m.username, myUsername);
-                    myPlayer.health = 3;
-                    myPlayer.x = Math.floor(Math.random() * (1280 - 60)) + 30;
-                    myPlayer.y = Math.floor(Math.random() * (800 - 60)) + 30;
-                    myPlayer.vx = 0;
-                    myPlayer.vy = 0;
-                }
-                sendMove(myPlayer.x, myPlayer.y, myPlayer.angle, myPlayer.thrusting, myPlayer.health);
-                continue;
-            }
-        }
-
-        if (m.active) {
-            let hitSomeone = false;
+        if (m.username === myUsername && m.active) {
+            let hitVictim = null;
             for (const username in otherPlayers) {
-                if (username === m.username) continue;
                 const p = otherPlayers[username];
                 const dx = p.x - m.x;
                 const dy = p.y - m.y;
-                if ((dx * dx + dy * dy) < (15 + 10) * (15 + 10)) {
-                    hitSomeone = true;
+                if ((dx * dx + dy * dy) < (35 + 10) * (35 + 10)) {
+                    hitVictim = username;
                     break;
                 }
             }
-            if (hitSomeone) {
+            if (hitVictim) {
                 m.active = false;
                 missiles.splice(i, 1);
+                sendHit(hitVictim, m.username);
                 continue;
             }
         }

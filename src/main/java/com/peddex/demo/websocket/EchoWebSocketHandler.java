@@ -31,7 +31,7 @@ public class EchoWebSocketHandler extends TextWebSocketHandler {
     private final Random random = new Random();
 
     public EchoWebSocketHandler() {
-        scheduler.scheduleAtFixedRate(this::spawnAsteroid, 5, 3, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::spawnAsteroid, 5000, 1500, TimeUnit.MILLISECONDS);
     }
 
     private void spawnAsteroid() {
@@ -89,6 +89,9 @@ public class EchoWebSocketHandler extends TextWebSocketHandler {
                     break;
                 case "destroy_asteroid":
                     handleDestroyAsteroidMessage(jsonNode);
+                    break;
+                case "hit":
+                    handleHitMessage(jsonNode);
                     break;
                 case "kill":
                     handleKillMessage(jsonNode);
@@ -171,6 +174,13 @@ public class EchoWebSocketHandler extends TextWebSocketHandler {
         String id = jsonNode.has("id") ? jsonNode.get("id").asText() : "";
         String destroyMsg = objectMapper.writeValueAsString(new DestroyAsteroidMessage("destroy_asteroid", id));
         broadcast(destroyMsg);
+    }
+
+    private void handleHitMessage(JsonNode jsonNode) throws Exception {
+        String victim = jsonNode.has("victim") ? jsonNode.get("victim").asText() : "";
+        String shooter = jsonNode.has("shooter") ? jsonNode.get("shooter").asText() : "";
+        String hitMsg = "{\"type\":\"hit\",\"victim\":\"" + victim + "\",\"shooter\":\"" + shooter + "\"}";
+        broadcast(hitMsg);
     }
 
     private void handleKillMessage(JsonNode jsonNode) throws Exception {

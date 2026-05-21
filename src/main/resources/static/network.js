@@ -42,7 +42,9 @@ export function connectToServer() {
             }
         }
         else if (data.type === 'shoot') {
-            spawnMissile(data.username, data.x, data.y, data.angle);
+            if (data.username !== myUsername) {
+                spawnMissile(data.username, data.x, data.y, data.angle);
+            }
         }
         else if (data.type === 'asteroid') {
             asteroids.push(data);
@@ -50,6 +52,20 @@ export function connectToServer() {
         else if (data.type === 'destroy_asteroid') {
             const idx = asteroids.findIndex(a => a.id === data.id);
             if (idx !== -1) asteroids.splice(idx, 1);
+        }
+        else if (data.type === 'hit') {
+            if (data.victim === myUsername) {
+                myPlayer.health--;
+                if (myPlayer.health <= 0) {
+                    sendKill(data.shooter, myUsername);
+                    myPlayer.health = 3;
+                    myPlayer.x = Math.floor(Math.random() * (1280 - 60)) + 30;
+                    myPlayer.y = Math.floor(Math.random() * (800 - 60)) + 30;
+                    myPlayer.vx = 0;
+                    myPlayer.vy = 0;
+                }
+                sendMove(myPlayer.x, myPlayer.y, myPlayer.angle, myPlayer.thrusting, myPlayer.health);
+            }
         }
         else if (data.type === 'kill') {
             scores[data.shooter] = (scores[data.shooter] || 0) + 1;
@@ -82,6 +98,12 @@ export function sendShoot(x, y, angle) {
 export function sendDestroyAsteroid(id) {
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({ type: 'destroy_asteroid', id: id }));
+    }
+}
+
+export function sendHit(victim, shooter) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'hit', victim: victim, shooter: shooter }));
     }
 }
 
