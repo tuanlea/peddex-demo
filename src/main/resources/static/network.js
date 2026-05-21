@@ -39,16 +39,28 @@ export function connectToServer() {
         }
         else if (data.type === 'move') {
             if (data.username !== myUsername) {
-                otherPlayers[data.username] = { 
-                    x: data.x, 
-                    y: data.y, 
-                    angle: data.angle, 
-                    shipType: data.shipType, 
-                    thrusting: data.thrusting, 
-                    health: data.health,
-                    vx: data.vx || 0,
-                    vy: data.vy || 0
-                };
+                let p = otherPlayers[data.username];
+                if (!p) {
+                    otherPlayers[data.username] = { 
+                        x: data.x, 
+                        y: data.y, 
+                        angle: data.angle, 
+                        shipType: data.shipType, 
+                        thrusting: data.thrusting, 
+                        health: data.health,
+                        vx: data.vx || 0,
+                        vy: data.vy || 0
+                    };
+                } else {
+                    p.targetX = data.x;
+                    p.targetY = data.y;
+                    p.angle = data.angle;
+                    p.shipType = data.shipType;
+                    p.thrusting = data.thrusting;
+                    p.health = data.health;
+                    p.vx = data.vx || 0;
+                    p.vy = data.vy || 0;
+                }
             }
         }
         else if (data.type === 'shoot') {

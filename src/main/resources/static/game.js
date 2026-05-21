@@ -227,9 +227,8 @@ function drawParallaxBackground() {
         if (s.x > 1280) s.x -= 1280;
         if (s.y < 0) s.y += 800;
         if (s.y > 800) s.y -= 800;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, 2 / s.z, 0, Math.PI * 2);
-        ctx.fill();
+        const size = 4 / s.z;
+        ctx.fillRect(s.x, s.y, size, size);
     });
 }
 
@@ -468,6 +467,19 @@ export function startGameLoop() {
         // Predict other players movement locally
         for (const username in otherPlayers) {
             const p = otherPlayers[username];
+            
+            // Lerp towards target position to fix rubber banding
+            if (p.targetX !== undefined && p.targetY !== undefined) {
+                const distSq = (p.targetX - p.x)**2 + (p.targetY - p.y)**2;
+                if (distSq > 10000) { 
+                    p.x = p.targetX;
+                    p.y = p.targetY;
+                } else {
+                    p.x += (p.targetX - p.x) * 0.2;
+                    p.y += (p.targetY - p.y) * 0.2;
+                }
+            }
+
             if (p.thrusting) {
                 const accel = 0.03;
                 p.vx += Math.cos(p.angle) * accel;
