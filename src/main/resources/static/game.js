@@ -178,36 +178,31 @@ function updatePlayerPhysics() {
     const accel = 0.15;
     const friction = 0.98;
 
-    let inputX = 0;
-    let inputY = 0;
+    // Classic Asteroids tank-controls
+    let inputRotation = 0;
+    let inputThrust = 0;
 
-    if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['KeyW']) inputY -= 1;
-    if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['KeyS']) inputY += 1;
-    if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['KeyA']) inputX -= 1;
-    if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['KeyD']) inputX += 1;
+    if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['KeyW']) inputThrust = 1;
+    if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['KeyS']) inputThrust = -0.5; // Reverse thrust (half speed)
+    if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['KeyA']) inputRotation -= 1;
+    if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['KeyD']) inputRotation += 1;
 
-    if (inputX !== 0 || inputY !== 0) {
-        const length = Math.sqrt(inputX * inputX + inputY * inputY);
-        inputX /= length;
-        inputY /= length;
+    // Apply rotation
+    myPlayer.angle += inputRotation * 0.1;
+
+    // Apply thrust in the direction the ship is facing
+    myPlayer.thrusting = (inputThrust > 0); // Only show flame when going forward
+    if (inputThrust !== 0) {
+        myPlayer.vx += Math.cos(myPlayer.angle) * accel * inputThrust;
+        myPlayer.vy += Math.sin(myPlayer.angle) * accel * inputThrust;
     }
 
-    myPlayer.thrusting = (inputX !== 0 || inputY !== 0);
-    myPlayer.vx += inputX * accel;
-    myPlayer.vy += inputY * accel;
+    // Apply friction (space drifting)
     myPlayer.vx *= friction;
     myPlayer.vy *= friction;
+    
     myPlayer.x += myPlayer.vx;
     myPlayer.y += myPlayer.vy;
-
-    const speedSq = myPlayer.vx * myPlayer.vx + myPlayer.vy * myPlayer.vy;
-    if (speedSq > 0.01) {
-        const targetAngle = Math.atan2(myPlayer.vy, myPlayer.vx);
-        let diff = targetAngle - myPlayer.angle;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        myPlayer.angle += diff * 0.1;
-    }
 
     const visualRadius = myPlayer.radius;
     myPlayer.x = Math.max(visualRadius, Math.min(canvas.width - visualRadius, myPlayer.x));
