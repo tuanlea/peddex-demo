@@ -173,7 +173,7 @@ let lastSentHealth = 3;
 let lastSendTime = 0;
 
 function updatePlayerPhysics() {
-    const accel = 0.1;
+    const accel = 0.15;
     const friction = 0.98;
 
     let inputX = 0;

@@ -1,7 +1,7 @@
-import { elements } from './ui.js';
-import { startGameLoop, setUsername } from './game.js';
-import { connectToServer, sendChat } from './network.js';
-import { startMusic } from './audio.js';
+import { elements } from './ui.js?v=2';
+import { startGameLoop, setUsername } from './game.js?v=2';
+import { connectToServer, sendChat } from './network.js?v=2';
+import { startMusic } from './audio.js?v=2';
 
 // --- INITIALIZE GAME ---
 startGameLoop();
